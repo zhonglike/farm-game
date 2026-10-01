@@ -291,6 +291,27 @@
     }
     h += '</div>';
 
+    /* 招牌菜：厨房做的菜调拨过来，库存有货时客单价 +35% */
+    var dishIds = [];
+    for (var dk in D.DISHES) if (dishIds.indexOf(D.DISHES[dk].out) < 0) dishIds.push(D.DISHES[dk].out);
+    var canSig = sh.lv >= 3;
+    h += '<div class="hr"></div><div class="hint">招牌菜' +
+      (canSig ? '（选择后客单价 +35%，每服务一位消耗 1 份；<b>点菜品可补货 10 份</b>）：'
+        : '（<b>店铺升到 3 级</b>解锁）：') + '</div><div class="inv mt8">';
+    dishIds.forEach(function (did) {
+      var n = sh.stock[did] || 0;
+      var on = sh.signature === did;
+      h += '<div class="slot' + (on ? ' done' : '') + '" data-act="signature" data-id="' + sid + '" data-d="' + did + '">' +
+        '<span class="q">' + fmt(n) + '</span>' + A.img('item.' + did, '') +
+        '<div class="n">' + esc(FARM.itemName(did)) + (on ? ' ★' : '') + '</div></div>';
+    });
+    h += '</div><div class="hint mt8">先在「厨房」做菜，再点菜品把它设为招牌菜；' +
+      '再次点击<b>已是招牌菜</b>的那一格可从仓库补货 10 份。</div>';
+    if (sh.signature) {
+      h += '<div class="btn-row mt8"><button class="btn sm red" data-act="clearSignature" data-id="' + sid +
+        '">取消招牌菜（' + esc(FARM.itemName(sh.signature)) + '）</button></div>';
+    }
+
     h += '<div class="btn-row mt8">' +
       '<button class="btn sm gold" data-act="upS" data-id="' + sid + '">' + A.img('ui.plus', '') + '升级 ' + fmt(cfg.upCost * sh.lv) + '</button>' +
       '<button class="btn sm" data-act="promo" data-id="' + sid + '">📣 宣传</button>' +
@@ -456,6 +477,25 @@
       case 'hire': UI.closeSheet(); run(function () { return FARM.sim.hire(id, el.getAttribute('data-s')); }); return;
       case 'decor': UI.closeSheet(); run(function () { return FARM.sim.buyDecor(id, el.getAttribute('data-d')); }); return;
       case 'promo': UI.closeSheet(); run(function () { return FARM.sim.promoShop(id); }); return;
+      case 'signature':
+        var dish = el.getAttribute('data-d');
+        var cur = s.shops[id] && s.shops[id].signature;
+        /* 已是招牌菜 → 再点就是补货 10 份；否则设为招牌菜 */
+        run(function () {
+          var r = (cur === dish)
+            ? FARM.sim.transfer(id, dish, 10)
+            : FARM.sim.setSignature(id, dish);
+          shopSheet(id);   /* 重开抽屉，立即反映 ★ 标记 / 库存 / 取消按钮 */
+          return r;
+        });
+        return;
+      case 'clearSignature':
+        run(function () {
+          var r = FARM.sim.setSignature(id, null);
+          shopSheet(id);
+          return r;
+        });
+        return;
       case 'stock':
         UI.closeSheet();
         run(function () { return FARM.sim.transfer(id, el.getAttribute('data-item'), 10); });

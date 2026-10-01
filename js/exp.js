@@ -14,6 +14,8 @@
 
   function st() { return S.data; }
   function tstr(d) { return FARM.vfmt.timeStr(d); }
+  /* 研究院科技加成（tech.js 未加载时为 0） */
+  function techBuff(key) { return (FARM.tech && FARM.tech.buff) ? FARM.tech.buff(key) : 0; }
   function ok(m, extra) { var r = { ok: true, msg: m }; if (extra) for (var k in extra) r[k] = extra[k]; return r; }
   function fail(m) { return { ok: false, msg: m }; }
 
@@ -53,7 +55,8 @@
     if (slot.state !== 'ripe') return fail('果实还没成熟');
     var cfg = D.ORCHARD[slot.tree];
     if (S.itemTotal() >= s.cap) return fail('仓库已满，先卖一些');
-    var n = Math.max(1, Math.round(cfg.yield * (1 + FARM.sim.decorBuff('yield')) * (1 + petBuff('yield'))));
+    var n = Math.max(1, Math.round(cfg.yield * (1 + FARM.sim.decorBuff('yield'))
+      * (1 + petBuff('yield') + techBuff('yield'))));
     S.add(slot.tree, n);
     S.gainXp(cfg.xp);
     s.stats.tree++;
@@ -168,11 +171,12 @@
     if (!slot || !slot.fish) return fail('塘里没有鱼');
     if (slot.state !== 'ripe') return fail('还没到捕捞时间');
     var cfg = D.POND_FISH[slot.fish];
-    var n = Math.max(1, Math.round(fishYield(slot.fish) * (1 + petBuff('yield'))));
+    var yb = 1 + petBuff('yield') + techBuff('yield');
+    var n = Math.max(1, Math.round(fishYield(slot.fish) * yb));
     if (S.itemTotal() + n > s.cap) return fail('仓库快满了');
     var got = [];
     for (var k in cfg.out) {
-      var v = (k === 'fish') ? n : Math.max(1, Math.round(cfg.out[k] * (1 + petBuff('yield'))));
+      var v = (k === 'fish') ? n : Math.max(1, Math.round(cfg.out[k] * yb));
       S.add(k, v);
       s.dex.goods[k] = (s.dex.goods[k] || 0) + v;
       got.push(FARM.itemName(k) + ' ×' + v);
@@ -267,7 +271,7 @@
   function rollMine() {
     var s = st();
     var w = D.MINE_DROP[mineIdx()] || D.MINE_DROP[0];
-    var n = mineCfg().yield, out = {}, keys = Object.keys(w), totalW = 0, j;
+    var n = Math.max(1, mineCfg().yield + Math.round(techBuff('mineYield'))), out = {}, keys = Object.keys(w), totalW = 0, j;
     for (j = 0; j < keys.length; j++) totalW += w[keys[j]];
     for (var i = 0; i < n; i++) {
       var r = Math.random() * totalW, acc = 0, pick = keys[0];
@@ -330,7 +334,7 @@
    *  四、中央厨房
    * ========================================================== */
   function kitchenSlots() { return 1 + (st().kitchen.lv - 1); }
-  function kitchenSpeed() { return 1 + (st().kitchen.lv - 1) * 0.18; }
+  function kitchenSpeed() { return (1 + (st().kitchen.lv - 1) * 0.18) * (1 + techBuff('dishSpeed')); }
   function kitchenUpCost() { return 12000 * st().kitchen.lv; }
 
   function cook(did) {
@@ -407,7 +411,7 @@
     if (!p) return fail('还没有这只宠物');
     if (!S.has('petFeed', 1)) return fail('需要宠物饲料 ×1（磨坊可加工）');
     S.add('petFeed', -1);
-    p.bond += 12;
+    p.bond += Math.round(12 * (1 + techBuff('petBond')));
     var up = 0;
     while (p.bond >= D.PET_LEVEL_UP * p.lv && p.lv < K.MAX_PET_LV) {
       p.bond -= D.PET_LEVEL_UP * p.lv;

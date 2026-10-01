@@ -177,6 +177,57 @@
   D.ACHIEVEMENTS = D.ACHIEVEMENTS.concat(EXTRA_ACH);
 
   /* ==========================================================
+   *  六之二、水果加工线（让果园产出有真正的去处）
+   *  挂到已有的工厂：面包房 / 乳品坊 / 中央厨房（工厂）
+   * ========================================================== */
+  var EXTRA_RECIPES = {
+    pie:     { factory: 'bakery',  name: '水果派',   in: { apple: 3, flour: 2, butter: 1 },        out: { pie: 2 },     time: 260, xp: 62 },
+    muffin:  { factory: 'bakery',  name: '果粒马芬', in: { orange: 2, flour: 2, egg: 1 },          out: { muffin: 2 },  time: 200, xp: 48 },
+    frappe:  { factory: 'dairy',   name: '鲜果冰沙', in: { banana: 2, milk: 1, iceCream: 1 },      out: { frappe: 2 },  time: 240, xp: 56 },
+    candy:   { factory: 'kitchen', name: '果糖',     in: { lemon: 2, sugar: 2 },                   out: { candy: 3 },   time: 180, xp: 44 },
+    pudding: { factory: 'kitchen', name: '水果布丁', in: { cherry: 2, cream: 1, milk: 1 },         out: { pudding: 2 }, time: 230, xp: 58 }
+  };
+  var EXTRA_ITEMS2 = {
+    pie:     { name: '水果派',   kind: 'goods', price: 1450, icon: 'pie' },
+    muffin:  { name: '果粒马芬', kind: 'goods', price: 780,  icon: 'muffin' },
+    frappe:  { name: '鲜果冰沙', kind: 'goods', price: 1180, icon: 'frappe' },
+    candy:   { name: '果糖',     kind: 'goods', price: 520,  icon: 'candy' },
+    pudding: { name: '水果布丁', kind: 'goods', price: 960,  icon: 'pudding' }
+  };
+  for (var ek in EXTRA_ITEMS2) if (!D.ITEMS[ek]) D.ITEMS[ek] = EXTRA_ITEMS2[ek];
+  for (var er in EXTRA_RECIPES) if (!D.RECIPES[er]) D.RECIPES[er] = EXTRA_RECIPES[er];
+
+  /* ==========================================================
+   *  六之三、研究院（科技树）—— 矿物 / 加工品的长期消耗出口
+   *  eff 为「每级加成」，cost 为单次研究消耗，time 为研究秒数
+   * ========================================================== */
+  var TECH = {
+    irrigation: { name: '滴灌技术',   desc: '水分流失 -8% / 级',      max: 5, lv: 4,  time: 600,  cost: { coins: 25000,  stone: 20, iron: 8 },  eff: { water: 0.08 } },
+    breeding:   { name: '良种培育',   desc: '作物生长速度 +6% / 级',  max: 5, lv: 5,  time: 900,  cost: { coins: 40000,  stone: 30, iron: 15 }, eff: { grow: 0.06 } },
+    fertilizer: { name: '高效肥料',   desc: '作物产量 +5% / 级',      max: 5, lv: 6,  time: 1200, cost: { coins: 55000,  iron: 20, coal: 10 },  eff: { yield: 0.05 } },
+    automation: { name: '产线自动化', desc: '加工速度 +8% / 级',      max: 5, lv: 7,  time: 1500, cost: { coins: 70000,  iron: 25, coal: 15 },  eff: { craft: 0.08 } },
+    cuisine:    { name: '烹饪工艺',   desc: '厨房出餐速度 +10% / 级', max: 4, lv: 8,  time: 1800, cost: { coins: 90000,  coal: 20, gem: 3 },    eff: { dishSpeed: 0.10 } },
+    retail:     { name: '连锁管理',   desc: '分店客单价 +6% / 级',    max: 5, lv: 9,  time: 2100, cost: { coins: 120000, gem: 5, iron: 30 },    eff: { shopPrice: 0.06 } },
+    logistics:  { name: '物流网络',   desc: '订单报酬 +7% / 级',      max: 5, lv: 10, time: 2400, cost: { coins: 150000, coal: 25, gem: 6 },    eff: { orderPay: 0.07 } },
+    drilling:   { name: '深层钻探',   desc: '矿洞单次产量 +1 / 级',   max: 3, lv: 11, time: 2700, cost: { coins: 180000, iron: 40, gem: 8 },    eff: { mineYield: 1 } },
+    animalCare: { name: '动物营养学', desc: '动物产出 +6% / 级',      max: 5, lv: 12, time: 2000, cost: { coins: 130000, stone: 40, coal: 20 }, eff: { animal: 0.06 } },
+    zoology:    { name: '宠物行为学', desc: '宠物亲密度 +15% / 级',   max: 4, lv: 13, time: 2200, cost: { coins: 160000, gem: 6, iron: 35 },    eff: { petBond: 0.15 } },
+    storage:    { name: '仓储扩建',   desc: '仓库上限 +200 / 级',     max: 6, lv: 14, time: 2600, cost: { coins: 200000, stone: 60, iron: 45 }, eff: { cap: 200 } },
+    coldChain:  { name: '冷链保鲜',   desc: '成熟后枯萎时间 +50% / 级', max: 3, lv: 15, time: 3000, cost: { coins: 240000, coal: 40, gem: 10 },  eff: { wither: 0.5 } }
+  };
+
+  /* 实验室等级：研究速度倍率与升级消耗（索引 = 等级-1） */
+  var LAB = {
+    speed: [1, 1.25, 1.6, 2.1, 2.8],
+    upCost: [
+      { coins: 30000,  stone: 40, iron: 15 },
+      { coins: 90000,  stone: 80, iron: 40 },
+      { coins: 220000, iron: 70,  coal: 40 },
+      { coins: 520000, coal: 80,  gem: 20 }
+    ]
+  };
+
+  /* ==========================================================
    *  七、拓展每日任务
    * ========================================================== */
   var EXTRA_DAILY = [
@@ -184,9 +235,25 @@
     { id: 'd_fish',  desc: '收鱼 4 次',       need: { fish: 4 },  reward: { coins: 3000, gem: 5 } },
     { id: 'd_mine',  desc: '完成 3 次挖矿',   need: { mine: 3 },  reward: { coins: 4200, gem: 7 } },
     { id: 'd_dish',  desc: '烹制 3 道菜',     need: { dish: 3 },  reward: { coins: 5200, gem: 8 } },
-    { id: 'd_pet',   desc: '给宠物喂食 3 次', need: { pet: 3 },   reward: { coins: 2600, gem: 4 } }
+    { id: 'd_pet',   desc: '给宠物喂食 3 次', need: { pet: 3 },   reward: { coins: 2600, gem: 4 } },
+    { id: 'd_pie',   desc: '烘 2 个水果派',   need: { pie: 2 },   reward: { coins: 4800, gem: 8 } }
   ];
   D.DAILY_POOL = D.DAILY_POOL.concat(EXTRA_DAILY);
+
+  /* 拓展订单：水果加工品 */
+  D.ORDER_POOL = D.ORDER_POOL.concat([
+    { id: 'x13', need: { pie: 2, muffin: 2 },   pay: 6400,  xp: 250, lv: 8 },
+    { id: 'x14', need: { frappe: 3 },           pay: 5400,  xp: 220, lv: 7 },
+    { id: 'x15', need: { pudding: 2, candy: 3 },pay: 7100,  xp: 280, lv: 9 }
+  ]);
+
+  /* 研究院成就 */
+  D.ACHIEVEMENTS = D.ACHIEVEMENTS.concat([
+    { id: 'firstTech', name: '科学种田',   desc: '完成第一项研究',           reward: { coins: 8000, gem: 15 } },
+    { id: 'tech10',    name: '技术狂人',   desc: '累计研究 10 级科技',       reward: { coins: 40000, gem: 45 } },
+    { id: 'techAll',   name: '农业科学院', desc: '把全部科技都研究到满级',   reward: { coins: 200000, gem: 150 } },
+    { id: 'lab5',      name: '国家级实验室', desc: '把研究院升到 5 级',      reward: { coins: 120000, gem: 80 } }
+  ]);
 
   /* ==========================================================
    *  挂载
@@ -201,6 +268,9 @@
   D.DISHES = DISHES;
   D.PETS = PETS;
   D.PET_LEVEL_UP = PET_LEVEL_UP;
+  D.TECH = TECH;
+  D.LAB = LAB;
+  D.MAX_LAB_LV = LAB.speed.length;
 
   FARM.EXP = true;
 })(window);

@@ -126,6 +126,13 @@
     'item.sundae': 'items/sundae.png',
     'item.cake2': 'items/cake2.png',
 
+    /* 拓展：水果加工品（Kenney Food Kit，CC0） */
+    'item.pie': 'items/pie.png',
+    'item.muffin': 'items/muffin.png',
+    'item.frappe': 'items/frappe.png',
+    'item.candy': 'items/candy.png',
+    'item.pudding': 'items/pudding.png',
+
     /* 拓展：矿物（石块 = Kenney Tower Defense / 宝石 = Kenney Game Icons+） */
     'item.stone': 'minerals/stone.png',
     'item.gem': 'minerals/gem.png',

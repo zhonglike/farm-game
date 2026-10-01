@@ -14,6 +14,10 @@
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   /* 宠物被动加成（拓展玩法，未加载时为 0） */
   function petBuff(key) { return (FARM.exp && FARM.exp.petBuff) ? FARM.exp.petBuff(key) : 0; }
+  /* 研究院科技加成（未加载时为 0） */
+  function techBuff(key) { return (FARM.tech && FARM.tech.buff) ? FARM.tech.buff(key) : 0; }
+  /* 成熟后枯萎时限（受冷链保鲜科技影响） */
+  function witherMs() { return K.WITHER_AFTER_MS * (1 + techBuff('wither')); }
 
   /* ================= 环境修正 ================= */
   function weather() { var s = S.data; return D.WEATHER[s.weather.id] || D.WEATHER.sunny; }
@@ -34,7 +38,7 @@
   }
 
   function growSpeed() {
-    return (weather().grow || 1) * (season().grow || 1) * (1 + decorBuff('grow'));
+    return (weather().grow || 1) * (season().grow || 1) * (1 + decorBuff('grow')) * (1 + techBuff('grow'));
   }
 
   /* ================= 地块 ================= */
@@ -60,6 +64,7 @@
     var dryRate = 100 / 900;                      // 约 15 分钟耗尽
     dryRate *= (weather().dry > 0 ? weather().dry : 1);
     dryRate *= (1 + decorBuff('dry'));            // 水井为负值
+    dryRate *= (1 - Math.min(0.9, techBuff('water')));   // 滴灌科技
     if (S.data.autoWaterUntil > now()) dryRate *= 0.15;
     if (weather().id === 'rain') plot.water = Math.min(100, plot.water + dt * 3);
     else plot.water = Math.max(0, plot.water - dryRate * dt);
@@ -217,7 +222,7 @@
     var c = D.CROPS[p.crop];
     if (S.itemTotal() >= s.cap) return fail('仓库已满，先卖一些');
     var bonus = (weather().yield || 0) * (1 + decorBuff('yield'));
-    var n = Math.max(1, Math.round((c.yield + bonus) * (1 + petBuff('yield'))));
+    var n = Math.max(1, Math.round((c.yield + bonus) * (1 + petBuff('yield') + techBuff('yield'))));
     S.add(p.crop, n);
     S.gainXp(c.xp);
     s.stats.harvest++;
@@ -340,7 +345,7 @@
     for (var k in a.out) { total += a.out[k] * q; }
     if (S.itemTotal() + total > s.cap) return fail('仓库快满了');
     for (var k2 in a.out) {
-      var n = Math.round(a.out[k2] * q * (1 + (pen.bond || 0) / 200) * (1 + petBuff('animal')));
+      var n = Math.round(a.out[k2] * q * (1 + (pen.bond || 0) / 200) * (1 + petBuff('animal') + techBuff('animal')));
       S.add(k2, n);
       if (s.dex.goods[k2] === undefined) s.dex.goods[k2] = 0;
       s.dex.goods[k2] += n;
@@ -383,7 +388,7 @@
 
   /* ================= 加工厂 ================= */
   function factorySlots(f) { return 2 + (f.lv - 1); }
-  function factorySpeed(f) { return 1 + (f.lv - 1) * 0.22; }
+  function factorySpeed(f) { return (1 + (f.lv - 1) * 0.22) * (1 + techBuff('craft')); }
 
   function buildFactory(id) {
     var s = S.data, cfg = D.FACTORIES[id];
@@ -464,8 +469,25 @@
       if (b.speed) speed += b.speed * sh.staff[k];
     }
     var base = cfg.basePrice * (1 + (sh.lv - 1) * 0.18);
-    var mult = (1 + priceBonus) * (1 + charm * 0.02) * (0.55 + (sh.rep / 100) * 0.45);
-    return { price: base * mult, flow: 1 + flow, speed: 1 + speed, charm: charm };
+    var mult = (1 + priceBonus) * (1 + charm * 0.02) * (0.55 + (sh.rep / 100) * 0.45)
+      * (1 + techBuff('shopPrice'));
+    /* 招牌菜：库存里有招牌菜时客单价 +35% */
+    var sig = 0;
+    if (sh.signature && D.DISHES && (sh.stock[sh.signature] || 0) > 0) sig = 0.35;
+    return { price: base * mult * (1 + sig), flow: 1 + flow, speed: 1 + speed, charm: charm, sig: sig };
+  }
+
+  /* 设置招牌菜（店铺 3 级解锁）：把厨房做的菜调拨过来即可生效 */
+  function setSignature(shopId, dishId) {
+    var s = S.data, sh = s.shops[shopId];
+    if (!sh) return fail('还没开店');
+    if (sh.lv < 3) return fail('店铺 3 级才能设招牌菜');
+    var valid = false;
+    for (var k in D.DISHES) if (D.DISHES[k].out === dishId) valid = true;
+    if (dishId && !valid) return fail('这道菜不能当招牌菜');
+    sh.signature = dishId || null;
+    S.touch();
+    return ok(dishId ? ('招牌菜设为 ' + FARM.itemName(dishId) + '（客单价 +35%）') : '已取消招牌菜', { act: 'signature' });
   }
 
   function buildShop(id) {
@@ -560,7 +582,13 @@
       for (var k in cfg.consume) if ((sh.stock[k] || 0) < cfg.consume[k]) { canServe = false; break; }
       if (!canServe) { sh.rep = Math.max(20, sh.rep - 3); sh.nextAt += interval; continue; }
       for (var k2 in cfg.consume) sh.stock[k2] -= cfg.consume[k2];
-      var money = Math.round(info.price * (sh.promo > now() ? 1.8 : 1));
+      var sigOn = false;
+      if (sh.signature && (sh.stock[sh.signature] || 0) > 0) {
+        sh.stock[sh.signature]--;
+        sigOn = true;
+        sh.rep = Math.min(100, sh.rep + 0.3);
+      }
+      var money = Math.round(info.price * (1 + (sigOn ? 0.35 : 0)) * (sh.promo > now() ? 1.8 : 1));
       S.earn(money);
       S.gainXp(Math.max(2, Math.round(money / 45)));
       sh.revenue = (sh.revenue || 0) + money;
@@ -609,7 +637,7 @@
     if (!o) return fail('订单不存在');
     for (var k in o.need) if (!S.has(k, o.need[k])) return fail('缺货：' + FARM.itemName(k) + ' ×' + o.need[k]);
     for (var k2 in o.need) S.add(k2, -o.need[k2]);
-    var pay = Math.round(o.pay * (1 + petBuff('order')));
+    var pay = Math.round(o.pay * (1 + petBuff('order') + techBuff('orderPay')));
     S.earn(pay);
     S.gainXp(o.xp);
     s.stats.orders++;
@@ -699,7 +727,7 @@
     for (var i = 0; i < s.plots.length; i++) {
       var p = s.plots[i];
       plotStep(p, 1);
-      if (p.state === 'ripe' && p.ripeAt && now() - p.ripeAt > K.WITHER_AFTER_MS) {
+      if (p.state === 'ripe' && p.ripeAt && now() - p.ripeAt > witherMs()) {
         p.state = 'withered';
         S.touch();
       }
@@ -710,6 +738,7 @@
     Object.keys(s.shops).forEach(function (sid) { shopStep(sid); });
     if (now() - (s.lastOrderAt || 0) > 180000 || !s.orders.length) refreshOrders();
     FARM.exp && FARM.exp.tick();      /* 拓展玩法：果园 / 鱼塘 / 矿洞 / 厨房 */
+    FARM.tech && FARM.tech.tick();    /* 研究院：在研项目推进 */
     FARM.sys && FARM.sys.tick();
     s.lastSeen = now();
   }
@@ -725,7 +754,7 @@
       if (p.locked || p.state !== 'growing') continue;
       p.water = Math.max(0, p.water - seconds * (100 / 900));
       if (p.water <= 0) p.boost = (p.boost || 0) - seconds * 1000;
-      if (plotProgress(p) >= 1) { p.state = 'ripe'; p.ripeAt = now() - Math.min(seconds * 1000, K.WITHER_AFTER_MS - 1000); report.ripe++; }
+      if (plotProgress(p) >= 1) { p.state = 'ripe'; p.ripeAt = now() - Math.min(seconds * 1000, witherMs() - 1000); report.ripe++; }
     }
     for (var j = 0; j < s.pens.length; j++) {
       var before = s.pens[j].pending || 0;
@@ -770,7 +799,7 @@
     factorySlots: factorySlots, factorySpeed: factorySpeed, rushFactory: rushFactory,
     buildShop: buildShop, upgradeShop: upgradeShop, hire: hire, buyDecor: buyDecor,
     buyFarmDecor: buyFarmDecor, buyTool: buyTool, transfer: transfer, promoShop: promoShop,
-    shopInfo: shopInfo,
+    shopInfo: shopInfo, setSignature: setSignature,
     refreshOrders: refreshOrders, deliverOrder: deliverOrder,
     sell: sell, expandPlot: expandPlot, expandPen: expandPen, upgradeCap: upgradeCap,
     nextPlotUnlock: nextPlotUnlock, nextPenUnlock: nextPenUnlock,

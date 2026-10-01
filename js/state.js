@@ -54,6 +54,7 @@
       mine: { lv: 1, endAt: 0, drops: null },            /* 矿洞：等级 / 挖掘结束时间 / 待领取产出 */
       kitchen: { lv: 1, queue: [] },                     /* 中央厨房：等级 / 烹饪队列 */
       pets: {},                                          /* 宠物：id -> {lv,bond} */
+      tech: { lab: 1, doing: null, lv: {}, total: 0 },   /* 研究院：实验室等级 / 在研项目 / 各项科技等级 */
       inv: { wheat: 8 },
       cap: K.WAREHOUSE_BASE,
       factories: {},
@@ -184,6 +185,24 @@
           }).map(function (x) { return { did: x.did, endAt: x.endAt || 0 }; }) : []
         };
       }
+      if (s.tech && typeof s.tech === 'object') {
+        out.tech = {
+          lab: Math.max(1, Math.min((D.LAB ? D.LAB.speed.length : 5), s.tech.lab || 1)),
+          doing: null,
+          lv: {},
+          total: 0
+        };
+        if (s.tech.lv && typeof s.tech.lv === 'object') {
+          Object.keys(s.tech.lv).forEach(function (k) {
+            if (!D.TECH || !D.TECH[k]) return;
+            out.tech.lv[k] = Math.max(0, Math.min(D.TECH[k].max, Math.floor(s.tech.lv[k])));
+          });
+        }
+        if (s.tech.doing && D.TECH && D.TECH[s.tech.doing.tid]) {
+          out.tech.doing = { tid: s.tech.doing.tid, endAt: s.tech.doing.endAt || 0 };
+        }
+        Object.keys(out.tech.lv).forEach(function (k) { out.tech.total += out.tech.lv[k]; });
+      }
       if (s.pets && typeof s.pets === 'object') {
         out.pets = {};
         Object.keys(s.pets).forEach(function (k) {
@@ -215,6 +234,7 @@
           var sh = s.shops[k] || {};
           out.shops[k] = {
             lv: Math.max(1, Math.min(10, sh.lv || 1)), charm: sh.charm || 0,
+            signature: (D.DISHES && typeof sh.signature === 'string') ? sh.signature : null,
             staff: sh.staff && typeof sh.staff === 'object' ? sh.staff : {},
             decor: Array.isArray(sh.decor) ? sh.decor : [],
             stock: sh.stock && typeof sh.stock === 'object' ? sh.stock : {},

@@ -158,13 +158,14 @@
   };
 
   /* ==========================================================
-   *  四、中央厨房
+   *  四、农家厨房
    * ========================================================== */
   V.kitchen = function () {
     var s = st(), kt = s.kitchen;
     var slots = E.kitchenSlots();
-    var h = '<div class="panel"><h3>' + im('item.soup') + '中央厨房 <span class="tag">Lv.' + kt.lv + ' · 灶台 ' + kt.queue.length + '/' + slots + '</span></h3>' +
-      '<div class="hint">把农田与牧场的产出做成菜，菜品单价最高，也是高级订单的主要来源。升级厨房可增加灶台并加快出餐。</div>' +
+    var h = '<div class="panel"><h3>' + im('item.soup') + '农家厨房 <span class="tag">Lv.' + kt.lv + ' · 灶台 ' + kt.queue.length + '/' + slots + '</span></h3>' +
+      '<div class="hint">把农田与牧场的产出做成菜，菜品单价最高，也是高级订单的主要来源；' +
+      '做好的菜还能调拨到分店当<b>招牌菜</b>（客单价 +35%）。升级厨房可增加灶台并加快出餐。</div>' +
       '<div class="btn-row"><button class="btn sm gold" data-act="upKitchen">' + ui('plus') +
       '升级厨房 ' + fmt(E.kitchenUpCost()) + '</button></div></div>';
 

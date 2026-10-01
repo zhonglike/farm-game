@@ -196,8 +196,11 @@
    * ========================================================== */
   V.factory = function () {
     var s = S();
+    var full = FARM.state.itemTotal() >= s.cap;
     var h = '<div class="panel"><h3>' + buildImg('mill') + '加工链 <span class="tag">原料 → 加工品，利润倍增</span></h3>' +
-      '<div class="hint">先建工厂，再选择配方投入原料。队列长度随等级提升。</div></div><div class="cards">';
+      '<div class="hint">先建工厂，再选择配方投入原料。队列长度随等级提升。</div>' +
+      (full ? '<div class="hint" style="color:#c0392b"><b>⚠ 仓库已满（' + FARM.state.itemTotal() + ' / ' + s.cap + '）：生产完成的商品暂时无法入库，请先出售 / 交付订单扩容。</b></div>' : '') +
+      '</div><div class="cards">';
     for (var fid in D.FACTORIES) {
       var cfg = D.FACTORIES[fid], f = s.factories[fid];
       if (!f) {
