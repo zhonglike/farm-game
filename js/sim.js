@@ -127,8 +127,15 @@
     if (!c) return fail('没有这种作物');
     if (p.state !== 'tilled') return fail('这块地还不能播种');
     if (s.level < c.lv) return fail('Lv.' + c.lv + ' 解锁' + c.name);
-    if (s.coins < c.seed) return fail('金币不足，需要 ' + c.seed);
-    S.spend(c.seed);
+    /* 优先消耗仓库里的种子（免费），没有种子才花金币现购 */
+    var seedId = 'seed_' + cropId;
+    if (S.has(seedId, 1)) {
+      S.add(seedId, -1);
+    } else if (s.coins >= c.seed) {
+      S.spend(c.seed);
+    } else {
+      return fail('种子不足：需要 ' + c.name + '种子 ×1（或 ' + c.seed + ' 金币现购）');
+    }
     p.state = 'growing'; p.crop = cropId; p.at = now();
     /* 播种后水分 70：留出浇水空间，符合"种下就要浇水"的直觉 */
     p.boost = 0; p.water = 70; p.weed = 0; p.bug = 0; p.fert = 0;
@@ -142,8 +149,7 @@
     var s = S.data, p = s.plots[i];
     if (!p.crop || p.state === 'ripe' || p.state === 'withered') return fail('这里不需要浇水');
     if (p.water >= 100) return fail('水分已满');
-    if ((s.tools.waterCan || 0) > 0) s.tools.waterCan--;
-    else if (!S.spend(5)) return fail('金币不足（洒水壶可免费浇水）');
+    /* 日常操作免费（QQ 农场式），付费加速走化肥 / 生长激素 */
     p.water = 100;
     s.stats.water++;
     S.touch();
@@ -154,7 +160,6 @@
   function cleanWeed(i) {
     var s = S.data, p = s.plots[i];
     if (!p.weed) return fail('这里没有杂草');
-    if ((s.tools.herbicide || 0) > 0) s.tools.herbicide--;
     p.weed = 0;
     S.gainXp(2);
     s.stats.clean++;
@@ -165,8 +170,6 @@
   function cleanBug(i) {
     var s = S.data, p = s.plots[i];
     if (!p.bug) return fail('这里没有害虫');
-    if ((s.tools.bugSpray || 0) > 0) s.tools.bugSpray--;
-    else if (!S.spend(8)) return fail('金币不足（杀虫剂可免费除虫）');
     p.bug = 0;
     S.gainXp(3);
     s.stats.clean++;

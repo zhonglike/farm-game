@@ -55,7 +55,8 @@
       kitchen: { lv: 1, queue: [] },                     /* 中央厨房：等级 / 烹饪队列 */
       pets: {},                                          /* 宠物：id -> {lv,bond} */
       tech: { lab: 1, doing: null, lv: {}, total: 0 },   /* 研究院：实验室等级 / 在研项目 / 各项科技等级 */
-      inv: { wheat: 8 },
+      /* 开局福利：10 粒小麦种子（价值 10 金币，收成 20 金币 —— 1:2 起步） */
+      inv: { seed_wheat: 10 },
       cap: K.WAREHOUSE_BASE,
       factories: {},
       shops: {},

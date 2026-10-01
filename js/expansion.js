@@ -38,7 +38,7 @@
    *  cost: 鱼苗价 | grow: 成熟秒数 | feed: 每轮饲料 | yield: 产量
    * ========================================================== */
   var POND_FISH = {
-    carp:   { name: '鲤鱼',   cost: 600,   lv: 2,  grow: 300,  feed: { wheat: 4 },        out: { fish: 2 }, xp: 30 },
+    carp:   { name: '鲤鱼',   cost: 600,   lv: 2,  grow: 300,  feed: { wheat: 8 },        out: { fish: 2 }, xp: 30 },
     grass:  { name: '草鱼',   cost: 1800,  lv: 4,  grow: 420,  feed: { corn: 4 },         out: { fish: 3 }, xp: 52 },
     salmon: { name: '三文鱼', cost: 5200,  lv: 7,  grow: 560,  feed: { petFeed: 2 },      out: { fish: 4 }, xp: 88 },
     shrimp: { name: '虾',     cost: 14000, lv: 10, grow: 700,  feed: { petFeed: 3 },      out: { fish: 5 }, xp: 140 }

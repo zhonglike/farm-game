@@ -157,17 +157,22 @@
     for (var cid in D.CROPS) {
       var c = D.CROPS[cid];
       var canLv = s.level >= c.lv;
-      var canSeed = S().inv[cid] > 0 || s.coins >= c.seed;
+      var own = s.inv['seed_' + cid] || 0;
+      var canSeed = own > 0 || s.coins >= c.seed;
       var fit = FARM.sim.seasonFit(cid);
+      var seedTxt = own > 0
+        ? (own >= 100 ? '种子×' + own + '（免费）' : '背包种子 ×' + own + '（免费）')
+        : '现购种子 ' + c.seed;
       h += '<div class="opt' + (canLv && canSeed ? '' : ' dis') + '" data-act="sow" data-i="' + i + '" data-id="' + cid + '">' +
         A.img('crop.' + cid, '') +
         '<div class="n">' + esc(c.name) + '</div>' +
-        '<div class="s">' + (canLv ? (canSeed ? '种子 ' + c.seed : '缺种子') : 'Lv.' + c.lv) +
+        '<div class="s">' + (canLv ? (canSeed ? seedTxt : '缺种子') : 'Lv.' + c.lv) +
         '<br>' + tstr(c.grow * 1000 / FARM.sim.growSpeed()) + ' · 产' + c.yield +
         (fit > 1 ? '<br><span class="tagpill">当季 ×' + fit + '</span>' : (fit < 1 ? '<br><span class="tagpill r">非当季 ×' + fit + '</span>' : '')) +
         '</div></div>';
     }
-    h += '</div><div class="hint mt8">提示：仓库里有种子时优先消耗种子，否则用金币购买。</div>';
+    h += '</div><div class="hint mt8">提示：优先消耗背包里的种子（免费），用完才按标价用金币现购。' +
+      '收获回报最低 2 倍起步，越高级的作物回报越高。</div>';
     UI.sheet(h);
   }
 

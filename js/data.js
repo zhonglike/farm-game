@@ -42,7 +42,7 @@
    */
   var ITEMS = {
     /* ---- 作物 ---- */
-    wheat:      { name: '小麦',   kind: 'crop',  price: 8,    icon: 'wheat' },
+    wheat:      { name: '小麦',   kind: 'crop',  price: 1,    icon: 'wheat' },
     carrot:     { name: '胡萝卜', kind: 'crop',  price: 12,   icon: 'carrot' },
     potato:     { name: '土豆',   kind: 'crop',  price: 18,   icon: 'potato' },
     corn:       { name: '玉米',   kind: 'crop',  price: 26,   icon: 'corn' },
@@ -99,24 +99,42 @@
    * grow: 成熟秒数（未加速）| stage: 5 段视觉阶段
    * season: 适季（当季生长 +25%，错季 -30%）
    */
+  /* seed = 种子单价；回报倍率 = yield × 售价 ÷ seed，
+   * 曲线从 Lv.1 的 2.0 倍递增到 Lv.13 的 4.6 倍，全线 ≥ 2 倍 */
   var CROPS = {
-    wheat:      { name: '小麦',   seed: 8,   grow: 60,   yield: 3, xp: 2,  lv: 1,  season: 'spring' },
-    carrot:     { name: '胡萝卜', seed: 14,  grow: 110,  yield: 3, xp: 4,  lv: 1,  season: 'spring' },
-    potato:     { name: '土豆',   seed: 24,  grow: 170,  yield: 4, xp: 6,  lv: 2,  season: 'spring' },
-    corn:       { name: '玉米',   seed: 38,  grow: 240,  yield: 4, xp: 9,  lv: 3,  season: 'summer' },
-    tomato:     { name: '番茄',   seed: 55,  grow: 320,  yield: 4, xp: 12, lv: 3,  season: 'summer' },
-    cucumber:   { name: '黄瓜',   seed: 78,  grow: 400,  yield: 4, xp: 15, lv: 4,  season: 'summer' },
-    eggplant:   { name: '茄子',   seed: 105, grow: 500,  yield: 4, xp: 19, lv: 5,  season: 'summer' },
-    pepper:     { name: '辣椒',   seed: 135, grow: 600,  yield: 4, xp: 23, lv: 5,  season: 'autumn' },
-    pumpkin:    { name: '南瓜',   seed: 175, grow: 720,  yield: 3, xp: 28, lv: 6,  season: 'autumn' },
-    watermelon: { name: '西瓜',   seed: 230, grow: 860,  yield: 3, xp: 34, lv: 7,  season: 'summer' },
-    strawberry: { name: '草莓',   seed: 290, grow: 1000, yield: 4, xp: 40, lv: 8,  season: 'spring' },
-    grape:      { name: '葡萄',   seed: 370, grow: 1180, yield: 4, xp: 47, lv: 9,  season: 'autumn' },
-    coffee:     { name: '咖啡豆', seed: 470, grow: 1360, yield: 3, xp: 55, lv: 10, season: 'autumn' },
-    cotton:     { name: '棉花',   seed: 590, grow: 1560, yield: 4, xp: 64, lv: 11, season: 'autumn' },
-    tea:        { name: '茶叶',   seed: 730, grow: 1780, yield: 3, xp: 74, lv: 12, season: 'spring' },
-    truffle:    { name: '松露',   seed: 980, grow: 2000, yield: 2, xp: 95, lv: 13, season: 'winter' }
+    wheat:      { name: '小麦',   seed: 1,    grow: 60,   yield: 2, xp: 1,  lv: 1,  season: 'spring' },
+    carrot:     { name: '胡萝卜', seed: 14,   grow: 110,  yield: 3, xp: 4,  lv: 1,  season: 'spring' },
+    potato:     { name: '土豆',   seed: 24,   grow: 170,  yield: 4, xp: 6,  lv: 2,  season: 'spring' },
+    corn:       { name: '玉米',   seed: 38,   grow: 240,  yield: 4, xp: 9,  lv: 3,  season: 'summer' },
+    tomato:     { name: '番茄',   seed: 55,   grow: 320,  yield: 4, xp: 12, lv: 3,  season: 'summer' },
+    cucumber:   { name: '黄瓜',   seed: 68,   grow: 400,  yield: 4, xp: 15, lv: 4,  season: 'summer' },
+    eggplant:   { name: '茄子',   seed: 83,   grow: 500,  yield: 4, xp: 19, lv: 5,  season: 'summer' },
+    pepper:     { name: '辣椒',   seed: 104,  grow: 600,  yield: 4, xp: 23, lv: 5,  season: 'autumn' },
+    pumpkin:    { name: '南瓜',   seed: 98,   grow: 720,  yield: 3, xp: 28, lv: 6,  season: 'autumn' },
+    watermelon: { name: '西瓜',   seed: 124,  grow: 860,  yield: 3, xp: 34, lv: 7,  season: 'summer' },
+    strawberry: { name: '草莓',   seed: 194,  grow: 1000, yield: 4, xp: 40, lv: 8,  season: 'spring' },
+    grape:      { name: '葡萄',   seed: 232,  grow: 1180, yield: 4, xp: 47, lv: 9,  season: 'autumn' },
+    coffee:     { name: '咖啡豆', seed: 218,  grow: 1360, yield: 3, xp: 55, lv: 10, season: 'autumn' },
+    cotton:     { name: '棉花',   seed: 343,  grow: 1560, yield: 4, xp: 64, lv: 11, season: 'autumn' },
+    tea:        { name: '茶叶',   seed: 307,  grow: 1780, yield: 3, xp: 74, lv: 12, season: 'spring' },
+    truffle:    { name: '松露',   seed: 339,  grow: 2000, yield: 2, xp: 95, lv: 13, season: 'winter' }
   };
+
+  /* ================= 种子（实体商品） =================
+   * 播种优先消耗仓库里的种子；种子也是普通物品：可买卖、占仓库容量。
+   * 价格与 CROPS.seed 一致；开局赠送 10 粒小麦种子（见 state.js newSave）。 */
+  var SEED_ITEMS = {};
+  (function () {
+    for (var cid in CROPS) {
+      SEED_ITEMS['seed_' + cid] = {
+        name: CROPS[cid].name + '种子',
+        kind: 'seed',
+        price: CROPS[cid].seed,
+        icon: cid
+      };
+    }
+  })();
+  for (var _sk in SEED_ITEMS) ITEMS[_sk] = SEED_ITEMS[_sk];
 
   /* ================= 动物 =================
    * cap: 栏位容量 | cycle: 单只产出周期(秒) | feed: 每只每轮消耗
@@ -125,15 +143,15 @@
     chicken: { name: '小鸡',   cost: 180,  cycle: 100, out: { egg: 1 },        feed: { wheat: 2 },    cap: 8, lv: 1,  xp: 6 },
     duck:    { name: '鸭子',   cost: 420,  cycle: 150, out: { duckEgg: 1 },    feed: { corn: 2 },     cap: 8, lv: 3,  xp: 11 },
     rabbit:  { name: '兔子',   cost: 780,  cycle: 200, out: { rabbitWool: 1 }, feed: { carrot: 3 },   cap: 8, lv: 4,  xp: 17 },
-    goose:   { name: '大鹅',   cost: 1350, cycle: 260, out: { feather: 2 },    feed: { wheat: 4 },    cap: 6, lv: 5,  xp: 25 },
-    sheep:   { name: '绵羊',   cost: 2100, cycle: 330, out: { wool: 2 },       feed: { wheat: 5 },    cap: 6, lv: 6,  xp: 35 },
+    goose:   { name: '大鹅',   cost: 1350, cycle: 260, out: { feather: 2 },    feed: { wheat: 8 },    cap: 6, lv: 5,  xp: 25 },
+    sheep:   { name: '绵羊',   cost: 2100, cycle: 330, out: { wool: 2 },       feed: { wheat: 10 },    cap: 6, lv: 6,  xp: 35 },
     cow:     { name: '奶牛',   cost: 3200, cycle: 400, out: { milk: 2 },       feed: { corn: 4 },     cap: 5, lv: 7,  xp: 47 },
     pig:     { name: '小猪',   cost: 4800, cycle: 480, out: { meat: 1 },       feed: { potato: 5 },   cap: 5, lv: 8,  xp: 62 },
     goat:    { name: '山羊',   cost: 7000, cycle: 540, out: { milk: 2 },       feed: { carrot: 5 },   cap: 5, lv: 9,  xp: 80 },
-    horse:   { name: '骏马',   cost: 9800, cycle: 620, out: { leather: 1 },    feed: { wheat: 8 },    cap: 4, lv: 10, xp: 100 },
+    horse:   { name: '骏马',   cost: 9800, cycle: 620, out: { leather: 1 },    feed: { wheat: 16 },    cap: 4, lv: 10, xp: 100 },
     bee:     { name: '蜜蜂',   cost: 13500,cycle: 420, out: { honey: 2 },      feed: { strawberry: 2 },cap: 6, lv: 11, xp: 122 },
     fish:    { name: '鱼群',   cost: 18000,cycle: 380, out: { fish: 3 },       feed: { corn: 6 },     cap: 4, lv: 12, xp: 148 },
-    alpaca:  { name: '羊驼',   cost: 25000,cycle: 700, out: { alpacaWool: 2 }, feed: { wheat: 10 },   cap: 4, lv: 13, xp: 180 }
+    alpaca:  { name: '羊驼',   cost: 25000,cycle: 700, out: { alpacaWool: 2 }, feed: { wheat: 20 },   cap: 4, lv: 13, xp: 180 }
   };
 
   /* ================= 工厂 ================= */
@@ -152,10 +170,10 @@
 
   /* ================= 配方 ================= */
   var RECIPES = {
-    flour:        { factory: 'mill',     name: '面粉',     in: { wheat: 3 },                  out: { flour: 1 },        time: 60,  xp: 5 },
+    flour:        { factory: 'mill',     name: '面粉',     in: { wheat: 6 },                  out: { flour: 1 },        time: 60,  xp: 5 },
     sugar:        { factory: 'mill',     name: '糖',       in: { corn: 3 },                   out: { sugar: 1 },        time: 70,  xp: 6 },
     oil:          { factory: 'press',    name: '食用油',   in: { potato: 4 },                 out: { oil: 1 },          time: 100, xp: 10 },
-    petFeed:      { factory: 'feedMill', name: '宠物饲料', in: { corn: 2, wheat: 2 },         out: { petFeed: 2 },      time: 90,  xp: 8 },
+    petFeed:      { factory: 'feedMill', name: '宠物饲料', in: { corn: 2, wheat: 4 },         out: { petFeed: 2 },      time: 90,  xp: 8 },
     bread:        { factory: 'bakery',   name: '面包',     in: { flour: 2 },                  out: { bread: 3 },        time: 120, xp: 14 },
     pastry:       { factory: 'bakery',   name: '烘焙点心', in: { flour: 2, egg: 1 },          out: { pastry: 3 },       time: 150, xp: 18 },
     cookie:       { factory: 'bakery',   name: '曲奇',     in: { flour: 2, butter: 1 },       out: { cookie: 3 },       time: 180, xp: 22 },
@@ -237,9 +255,6 @@
   /* ================= 道具 ================= */
   var TOOLS = {
     fert:    { name: '化肥',     cost: 60,   gem: 0, desc: '立刻推进当前作物 30% 生长' },
-    bugSpray:{ name: '杀虫剂',   cost: 90,   gem: 0, desc: '清除一块地的害虫' },
-    herbicide:{name: '除草剂',   cost: 50,   gem: 0, desc: '清除一块地的杂草' },
-    waterCan:{ name: '洒水壶',   cost: 40,   gem: 0, desc: '给一块地补满水分' },
     speedG:  { name: '生长激素', cost: 0,    gem: 3, desc: '一块地立刻成熟' },
     revive:  { name: '复活剂',   cost: 0,    gem: 5, desc: '救活枯萎的作物' },
     autoWater:{name: '自动洒水器',cost: 8000, gem: 0, desc: '24 小时内自动保持水分' },
@@ -316,7 +331,7 @@
 
   /* ================= 订单池 ================= */
   var ORDER_POOL = [
-    { id:'o1',  need:{ wheat:8 },              pay:180,   xp:14, lv:1 },
+    { id:'o1',  need:{ wheat:20 },             pay:60,    xp:8,  lv:1 },
     { id:'o2',  need:{ carrot:8 },             pay:260,   xp:18, lv:1 },
     { id:'o3',  need:{ egg:5 },                pay:300,   xp:22, lv:2 },
     { id:'o4',  need:{ potato:8 },             pay:360,   xp:26, lv:2 },

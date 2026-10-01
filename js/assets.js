@@ -213,6 +213,13 @@
     'ui.wheat': 'ui/wheat-icon.png'
   };
 
+  /* 种子图标：复用对应作物的图（seed_wheat → crops/wheat.png） */
+  (function () {
+    var crops = ['wheat','carrot','potato','corn','tomato','cucumber','eggplant','pepper',
+                 'pumpkin','watermelon','strawberry','grape','coffee','cotton','tea','truffle'];
+    for (var i = 0; i < crops.length; i++) MAP['item.seed_' + crops[i]] = 'crops/' + crops[i] + '.png';
+  })();
+
   /* ---------------- 画布生成精灵（补齐缺失动物） ---------------- */
   var critterCache = {};
 
