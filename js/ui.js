@@ -361,14 +361,22 @@
   }
 
   /* ================= 新手引导 ================= */
-  function curStep() { return D.TUTORIAL[S().tutorial.i] || null; }
+  function curStep() {
+    var s = S();
+    return (s && s.tutorial) ? (D.TUTORIAL[s.tutorial.i] || null) : null;
+  }
 
   function renderTutor() {
     var s = S(), root = $('#tutorRoot');
-    if (!s || s.tutorial.done || !curStep()) { root.innerHTML = ''; return; }
+    if (!s || !s.tutorial || s.tutorial.done || !curStep()) { root.innerHTML = ''; return; }
     var st = curStep();
-    /* 需要等待某个动作时隐藏遮罩，让玩家先去操作 */
-    if (s.tutorial.waiting) { root.innerHTML = ''; return; }
+    /* 等待玩家操作：显示非阻塞提示条 + 跳过按钮（不再整块消失，避免"弹窗不见了"的错觉） */
+    if (s.tutorial.waiting) {
+      root.innerHTML = '<div class="tutor-wait"><span class="wi">🎯</span>' +
+        '<span class="wt">' + esc(st.hint || ('继续：' + st.title)) + '</span>' +
+        '<button class="btn sm grey" data-act="tutorSkip">跳过引导</button></div>';
+      return;
+    }
     if (st.view && st.view !== UI.view) { UI.view = st.view; render(); return; }
 
     var html = '<div class="tutor-mask"></div>' +
@@ -396,9 +404,17 @@
 
   UI.tutorialSignal = function (act) {
     var s = S();
-    if (!s || s.tutorial.done) return;
-    if (s.tutorial.waiting !== act) return;
-    s.tutorial.waiting = null;
+    if (!s || !s.tutorial || s.tutorial.done) return;
+    var st = curStep();
+    if (!st) return;
+    if (s.tutorial.waiting === act) {
+      /* 正常顺序：先点弹窗按钮，再完成动作 */
+      s.tutorial.waiting = null;
+    } else if (!s.tutorial.waiting && st.wait === act) {
+      /* 宽容顺序：玩家没点弹窗按钮就先完成了动作，直接推进 */
+    } else {
+      return;
+    }
     s.tutorial.i++;
     if (s.tutorial.i >= D.TUTORIAL.length) s.tutorial.done = true;
     FARM.state.touch();
@@ -412,6 +428,16 @@
     if (st.wait) { s.tutorial.waiting = st.wait; }
     else { s.tutorial.i++; if (s.tutorial.i >= D.TUTORIAL.length) s.tutorial.done = true; }
     FARM.state.touch();
+    render();
+  }
+
+  function tutorSkip() {
+    var s = S();
+    if (!s || !s.tutorial) return;
+    s.tutorial.done = true;
+    s.tutorial.waiting = null;
+    FARM.state.touch();
+    UI.toast('已跳过新手引导，可在「更多」里重新开始', 'ok');
     render();
   }
 
@@ -548,6 +574,7 @@
 
       /* --- 引导 --- */
       case 'tutorNext': tutorNext(); return;
+      case 'tutorSkip': tutorSkip(); return;
 
       /* --- 拓展玩法（果园 / 鱼塘 / 矿洞 / 厨房 / 宠物） --- */
       default:

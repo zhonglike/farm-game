@@ -267,7 +267,11 @@
         });
       }
       if (Array.isArray(s.neighbors)) out.neighbors = s.neighbors;
-      if (s.tutorial) out.tutorial = { i: s.tutorial.i || 0, done: !!s.tutorial.done, waiting: s.tutorial.waiting || null };
+      if (s.tutorial) {
+        var ti = s.tutorial.i || 0;
+        if (!s.tutorial.done && (typeof ti !== 'number' || ti < 0 || ti >= D.TUTORIAL.length)) ti = 0;
+        out.tutorial = { i: ti, done: !!s.tutorial.done, waiting: s.tutorial.waiting || null };
+      }
       if (s.stats) Object.keys(base.stats).forEach(function (k) {
         if (typeof s.stats[k] === 'number') out.stats[k] = s.stats[k];
       });
