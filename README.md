@@ -96,18 +96,35 @@ farm-game/
 
 ### 1. 建仓库并推送
 
+仓库已经 `git init` + `commit` 好了（`main` 分支，188 个文件），并额外导出了一份 **git bundle**。
+
+### 方式 A：直接用 bundle 恢复并推送（推荐，一条不少）
+
+把 `farm-game.bundle` 拷到你自己的电脑上，然后：
+
 ```bash
+git clone farm-game.bundle farm-game
 cd farm-game
-git init
-git add -A
-git commit -m "开心农场 首个版本"
-git branch -M main
-git remote add origin https://github.com/zhonglike/farm-game.git
+git remote set-url origin https://github.com/zhonglike/farm-game.git
 git push -u origin main
 ```
 
-> ⚠️ **注意**：本次开发环境（沙箱）**无法访问 github.com**（网络不通），
-> 所以推送这一步需要在**你自己的电脑**上执行。仓库文件我已经全部准备好了。
+（bundle 里包含完整提交历史，clone 出来就是一个正常仓库。）
+
+### 方式 B：如果你已经把 farm-game 文件夹拷到本地
+
+```bash
+cd farm-game
+git remote add origin https://github.com/zhonglike/farm-game.git   # 若已存在则忽略
+git branch -M main
+git push -u origin main
+```
+
+推送时若要求登录，用户名填 `zhonglike`，密码填你的 **Personal Access Token**（`ghp_...`，需要 `repo` 权限）。
+
+> ⚠️ **注意**：本次开发环境（沙箱）**访问不到 github.com**（`curl` 返回 000，
+> `git push` 报 `gnutls_handshake() failed`），所以推送必须在**你自己的电脑**上执行。
+> 仓库内容与提交历史我已经全部准备好了。
 
 ### 2. 开启 GitHub Pages
 
