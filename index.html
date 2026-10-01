@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>开心农场 · 牧场经营</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ 顶部状态栏 ============ -->
+  <header id="topbar">
+    <div class="tb-left">
+      <div class="lv-badge"><span id="lvNum">1</span></div>
+      <div class="lv-wrap">
+        <div class="lv-name">农场主</div>
+        <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="res" id="resCoin" title="金币">
+        <img class="pix" src="assets/images/ui/coin.png" alt=""><span id="coinNum">0</span>
+      </div>
+      <div class="res" id="resGem" title="钻石">
+        <img class="pix" src="assets/images/ui/star.png" alt=""><span id="gemNum">0</span>
+      </div>
+      <div class="env" id="envBadge"></div>
+    </div>
+  </header>
+
+  <!-- ============ 主体视图 ============ -->
+  <main id="view"></main>
+
+  <!-- ============ 底部导航 ============ -->
+  <nav id="tabbar">
+    <button class="tab" data-view="farm"><img class="pix" src="assets/images/ui/wheat-icon.png" alt=""><span>农场</span></button>
+    <button class="tab" data-view="ranch"><img class="pix" src="assets/images/animals/pig.png" alt=""><span>牧场</span></button>
+    <button class="tab" data-view="orchard"><img class="pix" src="assets/images/crops/apple.png" alt=""><span>果园</span></button>
+    <button class="tab" data-view="pond"><img class="pix" src="assets/images/items/fish.png" alt=""><span>鱼塘</span></button>
+    <button class="tab" data-view="mine"><img class="pix" src="assets/images/minerals/stone.png" alt=""><span>矿洞</span></button>
+    <button class="tab" data-view="kitchen"><img class="pix" src="assets/images/items/soup.png" alt=""><span>厨房</span></button>
+    <button class="tab" data-view="pet"><img class="pix" src="assets/images/animals/parrot.png" alt=""><span>宠物</span></button>
+    <button class="tab" data-view="factory"><img class="pix" src="assets/images/buildings/shed.png" alt=""><span>加工</span></button>
+    <button class="tab" data-view="shop"><img class="pix" src="assets/images/buildings/house.png" alt=""><span>分店</span></button>
+    <button class="tab" data-view="warehouse"><img class="pix" src="assets/images/ui/basket.png" alt=""><span>仓库</span></button>
+    <button class="tab" data-view="order"><img class="pix" src="assets/images/fx/basket.png" alt=""><span>订单</span></button>
+    <button class="tab" data-view="neighbor"><img class="pix" src="assets/images/ui/heart.png" alt=""><span>邻居</span></button>
+    <button class="tab" data-view="more"><img class="pix" src="assets/images/ui/menuGrid.png" alt=""><span>更多</span></button>
+  </nav>
+
+  <!-- ============ 浮层 ============ -->
+  <div id="modalRoot"></div>
+  <div id="sheetRoot"></div>
+  <div id="toastRoot"></div>
+  <div id="tutorRoot"></div>
+
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/expansion.js"></script>
+<script src="js/state.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/systems.js"></script>
+<script src="js/assets.js"></script>
+<script src="js/views.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/exp.js"></script>
+<script src="js/exp_views.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
